@@ -42,4 +42,4 @@ Run the following command for the validation:
    ```
 
 ## Acknowledgements
-This code is mainly built on [SR3](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement) and [LIIF](https://github.com/yinboc/liif)
+This code is mainly built on [SR3](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement), [stylegan2-ada-pytorch](https://github.com/NVlabs/stylegan2-ada-pytorch), and [LIIF](https://github.com/yinboc/liif).
