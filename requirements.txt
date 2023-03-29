@@ -1,0 +1,17 @@
+addict
+future
+lmdb
+numpy>=1.17
+opencv-python
+Pillow
+pyyaml
+pandas
+requests
+scikit-image
+scipy
+tb-nightly
+tqdm
+einops
+yapf
+tensorboardx
+wandb
