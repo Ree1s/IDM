@@ -40,3 +40,6 @@ Run the following command for the validation:
    ```shell
    sh run.sh
    ```
+
+## Acknowledgements
+This code is mainly built on [SR3](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement) and [LIIF](https://github.com/yinboc/liif)
