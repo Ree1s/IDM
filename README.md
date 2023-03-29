@@ -9,7 +9,7 @@ This repository is still under development.
 
 ## Environment configuration
 
-###### **The codes are based on python3.7+, CUDA version 11.0+. The specific configuration steps are as follows:**
+The codes are based on python3.7+, CUDA version 11.0+. The specific configuration steps are as follows:
 
 1. Create conda environment
    
