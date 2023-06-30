@@ -35,7 +35,7 @@ Firstly, download the datasets used.
 - [FFHQ](https://github.com/NVlabs/ffhq-dataset) | [CelebaHQ](https://www.kaggle.com/badasstechie/celebahq-resized-256x256)
 - [DIV2K](https://data.vision.ee.ethz.ch/cvl/DIV2K/) ｜ [Flick2K](http://cv.snu.ac.kr/research/EDSR/Flickr2K.tar)
 
-Resize to get 16×16 LR_IMGS and 128×128 HR_IMGS, then prepare 128×128 Fake SR_IMGS by bicubic interpolation
+Then, resize to get LR_IMGS and HR_IMGS.
 ```
 python data/prepare_data.py  --path [dataset root]  --out [output root] --size 16,128 -l
 ```
