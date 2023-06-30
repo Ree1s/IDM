@@ -9,7 +9,7 @@ import model.networks as networks
 from .base_model import BaseModel
 import random
 import data.util as Util
-
+from .crop_validation import forward_crop
 logger = logging.getLogger('base')
 
 
@@ -56,7 +56,8 @@ class DDPM(BaseModel):
         p = random.random()
 
         img_lr, img_hr = data['inp'], data['gt']
-
+        w_hr = round(img_lr.shape[-1] + (img_hr.shape[-1] - img_lr.shape[-1]) * p)
+        img_hr = resize_fn(img_hr, w_hr)
         hr_coord, _ = Util.to_pixel_samples(img_hr)
         cell = torch.ones_like(hr_coord)
         cell[:, 0] *= 2 / img_hr.shape[-2]
@@ -88,17 +89,26 @@ class DDPM(BaseModel):
         # set log
         self.log_dict['l_pix'] = l_pix.item()
 
-    def test(self, continous=False):
+    def test(self, crop=False, continous=False, use_ddim=False):
         self.netG.eval()
-        with torch.no_grad():
-            if isinstance(self.netG, nn.parallel.DistributedDataParallel):
-                self.SR = self.netG.module.super_resolution(
-                    self.data, continous)
-            else:
-                self.SR = self.netG.super_resolution(
-                    self.data, continous)
-
-
+        if crop == False:
+            with torch.no_grad():
+                if isinstance(self.netG, nn.parallel.DistributedDataParallel):
+                    self.SR = self.netG.module.super_resolution(
+                        self.data, continous, use_ddim)
+                else:
+                    self.SR = self.netG.super_resolution(
+                        self.data, continous, use_ddim)
+        else:
+            with torch.no_grad():
+                if isinstance(self.netG, nn.parallel.DistributedDataParallel):
+                    self.SR = forward_crop(
+                        self.data, self.netG.module, continous, use_ddim
+                    )
+                else:
+                    self.SR = forward_crop(
+                        self.data, self.netG, continous, use_ddim
+                    )
         self.netG.train()
 
     def sample(self, batch_size=1, continous=False):

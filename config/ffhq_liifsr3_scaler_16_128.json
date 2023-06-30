@@ -1,5 +1,5 @@
 {
-    "name": "ffhq_scaler_1026",
+    "name": "ffhq_scaler",
     "phase": "train", // train or val
 
     "path": { //set the path

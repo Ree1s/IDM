@@ -6,8 +6,8 @@ from inspect import isfunction
 from functools import partial
 import numpy as np
 from tqdm import tqdm
-from data.util import make_coord
-from einops import rearrange
+from tqdm.contrib import tzip
+
 
 def noise_like(shape, device, repeat=False):
     def repeat_noise(): return torch.randn(
@@ -62,6 +62,10 @@ def make_beta_schedule(schedule, n_timestep, linear_start=1e-4, linear_end=2e-2,
 def exists(x):
     return x is not None
 
+def compute_alpha(beta, t):
+    beta = torch.cat([torch.zeros(1).to(beta.device), beta], dim=0)
+    a = (1 - beta).cumprod(dim=0).index_select(0, t + 1).view(-1, 1, 1, 1)
+    return a
 
 def default(val, d):
     if exists(val):
@@ -199,7 +203,45 @@ class GaussianDiffusion(nn.Module):
         noise = torch.randn_like(x) if t > 0 else torch.zeros_like(x)
         return model_mean + noise * (0.5 * model_log_variance).exp()
 
-            
+    @torch.no_grad()
+    def generalized_steps(self, x_in, conditional_input=None, continous=False):
+        device = self.betas.device
+        skip = self.num_timesteps // 200
+        seq = range(0, self.num_timesteps, skip)
+        seq_next = [-1] + list(seq[:-1])
+        sample_inter = (1 | (self.num_timesteps // 1000))
+        x, scaler = x_in['inp'], x_in['scaler']
+        b = x.size(0)
+
+        shape = x.shape
+        gt_shape = list(x_in['gt'].shape)
+        img = torch.randn(gt_shape, device=device)
+        x_feat = self.gen_feat(x, gt_shape[2:])
+        conditional_input = x_feat
+        # conditional_input = F.interpolate(x_in['inp'], x_in['gt'].shape[2:])
+
+        ret_img = img
+        for i, j in tzip(reversed(seq), reversed(seq_next)):
+            if i == 0:
+                break
+            noise_level = torch.FloatTensor(
+                [self.sqrt_alphas_cumprod_prev[i+1]]).repeat(b, 1).to(x.device)
+            t = (torch.ones(b) * i).to(x.device)
+            next_t = (torch.ones(b) * j).to(x.device)
+            at = compute_alpha(self.betas, t.long())    
+            at_next = compute_alpha(self.betas, next_t.long())
+            xt = ret_img[-1]
+            et = self.denoise_fn(torch.cat([conditional_input, xt.unsqueeze(0)], dim=1), conditional_input, scaler, noise_level)
+            x0_t = (xt - et * (1 - at).sqrt()) / at.sqrt()
+            c1 = (0 * ((1 - at / at_next) * (1 - at_next) / (1 - at)).sqrt())
+            c2 = ((1 - at_next) - c1 ** 2).sqrt()
+            xt_next = at_next.sqrt() * x0_t + c1 * torch.randn_like(img) + c2 * et
+            # if i % sample_inter == 0:
+            ret_img = torch.cat([ret_img, xt_next], dim=0)
+        if continous:
+            return ret_img
+        else:
+            return ret_img[-1]   
     @torch.no_grad()
     def p_sample_loop(self, x_in, continous=False):
         device = self.betas.device
@@ -215,7 +257,7 @@ class GaussianDiffusion(nn.Module):
         else:
             x, scaler = x_in['inp'], x_in['scaler']
             shape = x.shape
-            gt_shape = [i * 8 if i > 3 else i for i in shape ]
+            gt_shape = list(x_in['gt'].shape)
 
             img = torch.randn(gt_shape, device=device)
             x_feat = self.gen_feat(x,gt_shape[2:])
@@ -239,9 +281,11 @@ class GaussianDiffusion(nn.Module):
         return self.p_sample_loop((batch_size, channels, image_size, image_size), continous)
 
     @torch.no_grad()
-    def super_resolution(self, x_in, continous=False):
-        return self.p_sample_loop(x_in, continous)
-
+    def super_resolution(self, x_in, continous=False, use_ddim=False):
+        if not use_ddim:
+            return self.p_sample_loop(x_in, continous)
+        else:
+            return self.generalized_steps(x_in, conditional_input=None, continous=continous)
 
     def q_sample(self, x_start, continuous_sqrt_alpha_cumprod, noise=None):
         noise = default(noise, lambda: torch.randn_like(x_start))

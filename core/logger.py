@@ -24,6 +24,7 @@ def parse(args):
     gpu_ids = args.gpu_ids
     resume = args.resume
     enable_wandb = args.enable_wandb
+    use_ddim = args.use_ddim
     # remove comments starting with '//'
     json_str = ''
     with open(opt_path, 'r') as f:
@@ -45,6 +46,7 @@ def parse(args):
 
     # change dataset length limit
     opt['phase'] = phase
+    opt['use_ddim'] = use_ddim
 
     # debug
     if 'debug' in opt['name']:

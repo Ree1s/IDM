@@ -30,16 +30,25 @@ The codes are based on python3.7+, CUDA version 11.0+. The specific configuratio
    pip install -r requirements.txt
    python setup.py develop
    ```
-## Pre-trained checkpoint
+## Data preparation
+Firstly, download the datasets used.
+- [FFHQ](https://github.com/NVlabs/ffhq-dataset) | [CelebaHQ](https://www.kaggle.com/badasstechie/celebahq-resized-256x256)
+-  | [DIV2K](https://data.vision.ee.ethz.ch/cvl/DIV2K/) ｜ [Flick2K](http://cv.snu.ac.kr/research/EDSR/Flickr2K.tar)
 
-The pre-trained checkpoint and the val dataset of face 8X SR can be found at the following anonymous link: [link](https://1drv.ms/u/s!AraiW_uJqO8vhnlIa-8nd0PEH4Ur?e=qDfSep). Download and unzip `checkpoint_dataset.zip`. Move `checkpoint_dataset/best_psnr_gen.pth` and `checkpoint_dataset/dataset` to `./`.
+# Resize to get 16×16 LR_IMGS and 128×128 HR_IMGS, then prepare 128×128 Fake SR_IMGS by bicubic interpolation
+python data/prepare_data.py  --path [dataset root]  --out [output root] --size 16,128 -l
 
-## Validation
-Run the following command for the validation:
+## Pre-trained checkpoints
+
+The pre-trained checkpoints can be found at the following: [link](https://drive.google.com/drive/folders/1VISy9fVWa9iOSr6F4oVtKVTOViWuKohQ?usp=drive_link).
+
+## Training and Validation
+Run the following command for the training and validation:
 
    ```shell
    sh run.sh
    ```
+Add the command "-use_ddim" to implement DDIM sampling.
 
 ## Acknowledgements
 This code is mainly built on [SR3](https://github.com/Janspiry/Image-Super-Resolution-via-Iterative-Refinement), [stylegan2-ada-pytorch](https://github.com/NVlabs/stylegan2-ada-pytorch), and [LIIF](https://github.com/yinboc/liif).
