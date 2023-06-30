@@ -36,8 +36,9 @@ Firstly, download the datasets used.
 - [DIV2K](https://data.vision.ee.ethz.ch/cvl/DIV2K/) ｜ [Flick2K](http://cv.snu.ac.kr/research/EDSR/Flickr2K.tar)
 
 Resize to get 16×16 LR_IMGS and 128×128 HR_IMGS, then prepare 128×128 Fake SR_IMGS by bicubic interpolation
+```
 python data/prepare_data.py  --path [dataset root]  --out [output root] --size 16,128 -l
-
+```
 ## Pre-trained checkpoints
 
 The pre-trained checkpoints can be found at the following: [link](https://drive.google.com/drive/folders/1VISy9fVWa9iOSr6F4oVtKVTOViWuKohQ?usp=drive_link).
