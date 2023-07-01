@@ -84,8 +84,10 @@ class idm(nn.Module):
                     demodulate=True,
                     sample_mode=None,
                     resample_kernel=(1, 3, 3, 1))
-
-        self.imnet = nn.Sequential(nn.Linear(dim + 2 , 256),nn.Linear(256, dim))
+        if self.cell_decode:
+            self.imnet = nn.Sequential(nn.Linear(dim + 2 , 256),nn.Linear(256, dim))
+        else:
+            self.imnet = nn.Sequential(nn.Linear(dim + 2 + 2 , 256),nn.Linear(256, dim))
     def forward(self, x, shape, scale1, scale2, shift):
         coord = make_coord(shape).repeat(x.shape[0], 1, 1).to(dist.get_rank())
         cell = torch.ones_like(coord)
