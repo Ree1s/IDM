@@ -6,7 +6,8 @@ This repository is an offical implementation of the paper "Implicit Diffusion Mo
 
 This repository is still under development.
 
-
+## Updates:
+The pre-trained model for 8X face continuous SR has been updated in [link](https://drive.google.com/drive/folders/1VISy9fVWa9iOSr6F4oVtKVTOViWuKohQ?usp=drive_link).
 ## Environment configuration
 
 The codes are based on python3.7+, CUDA version 11.0+. The specific configuration steps are as follows:
